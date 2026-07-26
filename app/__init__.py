@@ -1,0 +1,1 @@
+"""qBittorrent management panel package."""

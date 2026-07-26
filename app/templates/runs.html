@@ -1,0 +1,109 @@
+﻿{% extends "base.html" %}
+{% block title %}执行日志 - {{ app_name }}{% endblock %}
+{% block content %}
+<section class="page-header" data-animate="fade-in-up">
+  <div>
+    <p class="eyebrow">执行日志</p>
+    <h2>强制重新汇报运行记录</h2>
+    <div class="muted runs-meta">共 <span id="run-count">{{ total }}</span> 条记录</div>
+  </div>
+  <div class="flex-row">
+    <select id="filter-instance" class="filter-select">
+      <option value="">全部实例</option>
+      {% for inst in instances.values() %}
+      <option value="{{ inst.id }}"{% if filter_instance_id == inst.id %} selected{% endif %}>{{ inst.name }}</option>
+      {% endfor %}
+    </select>
+    <span class="muted runs-meta">{{ total }} 条</span>
+  </div>
+</section>
+<section class="panel panel--no-clip">
+  <div class="table-wrap">
+    <table id="runs-table">
+      <thead>
+        <tr>
+          <th class="col-id">ID</th>
+          <th class="col-instance">实例</th>
+          <th class="col-source">来源</th>
+          <th class="col-status">状态</th>
+          <th class="col-started">开始时间</th>
+          <th class="col-finished">结束时间</th>
+          <th class="col-torrents">种子数</th>
+          <th>错误</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in runs %}
+        <tr data-animate="fade-in-up">
+          <td><span class="run-id">#{{ run.id }}</span></td>
+          <td class="instance-cell">{{ instances[run.qb_instance_id].name if run.qb_instance_id in (instances|default({})) else run.qb_instance_id }}</td>
+          <td>
+            {% if run.trigger_source == 'manual' %}
+            <span class="run-source-badge-table">手动触发</span>
+            {% elif run.trigger_source == 'scheduled' %}
+            <span class="run-source-badge-table">定时任务</span>
+            {% else %}
+            <span class="run-source-badge-table">{{ run.trigger_source }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if run.status == 'succeeded' %}
+            <span class="badge badge-succeeded">成功</span>
+            {% elif run.status == 'failed' %}
+            <span class="badge badge-failed">失败</span>
+            {% elif run.status == 'running' %}
+            <span class="badge badge-running">运行中</span>
+            {% else %}
+            <span class="badge badge-{{ run.status }}">{{ run.status }}</span>
+            {% endif %}
+          </td>
+          <td class="tabular-nums">{{ run.started_at|beijing_time }}</td>
+          <td class="tabular-nums">{{ (run.finished_at|beijing_time) if run.finished_at else '-' }}</td>
+          <td><span class="torrent-count">{{ run.torrent_count }}</span></td>
+          <td><span class="error-cell" title="{{ run.error_message or '-' }}">{{ run.error_message or '-' }}</span></td>
+        </tr>
+        {% else %}
+        <tr data-animate="fade-in"><td colspan="8" class="empty">
+          <div>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-state-icon"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+            <div class="empty-title">还没有执行日志</div>
+            <div class="empty-desc">配置实例后，定时任务将自动记录执行日志</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    {% if page > 1 %}
+    <a href="?page=1&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link pagination-link--nav" title="第一页">&laquo;</a>
+    <a href="?page={{ page - 1 }}&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link pagination-link--nav"><span class="pagination-link-text">‹ 上一页</span><span class="pagination-link-short">‹</span></a>
+    {% endif %}
+
+    {%- set window = 3 -%}
+    {%- set start_page = [page - window, 1] | max -%}
+    {%- set end_page = [page + window, total_pages] | min -%}
+
+    {% if start_page > 1 %}
+    <a href="?page=1&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link">1</a>
+    {% if start_page > 2 %}<span class="pagination-ellipsis">…</span>{% endif %}
+    {% endif %}
+
+    {% for p in range(start_page, end_page + 1) %}
+    <a href="?page={{ p }}&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link{% if p == page %} pagination-link--active{% endif %}">{{ p }}</a>
+    {% endfor %}
+
+    {% if end_page < total_pages %}
+    {% if end_page < total_pages - 1 %}<span class="pagination-ellipsis">…</span>{% endif %}
+    <a href="?page={{ total_pages }}&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link">{{ total_pages }}</a>
+    {% endif %}
+
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link pagination-link--nav"><span class="pagination-link-text">下一页 ›</span><span class="pagination-link-short">›</span></a>
+    <a href="?page={{ total_pages }}&page_size={{ page_size }}{% if filter_instance_id %}&instance_id={{ filter_instance_id }}{% endif %}" class="pagination-link pagination-link--nav" title="最后一页">&raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

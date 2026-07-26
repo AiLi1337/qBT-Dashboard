@@ -1,0 +1,17 @@
+﻿__pycache__/
+.pytest_cache/
+.pytest_tmp/
+.venv/
+.env
+.env.*
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+/data/
+/dist/
+/build/
+/logs/
+_fix_encoding.py
+_t.txt

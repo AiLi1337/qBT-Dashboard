@@ -1,0 +1,160 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ instance.name }} - 种子列表 - {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header" data-animate="fade-in-up">
+  <div>
+    <p class="eyebrow">实例详情</p>
+    <h2>{{ instance.name }}</h2>
+    <p class="muted page-desc">{{ instance.base_url }}</p>
+  </div>
+  <div class="header-actions">
+    <a href="/instances" class="link-button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      返回实例列表
+    </a>
+  </div>
+</section>
+
+<section class="panel panel-form" data-animate="fade-in">
+  <div class="panel-head">
+    <h3>编辑配置</h3>
+  </div>
+  <form class="stack update-instance-form" data-update-instance-form="{{ instance.id }}">
+    <div class="form-grid">
+      <label class="form-field">
+        <span>名称</span>
+        <input name="name" value="{{ instance.name }}" required />
+      </label>
+      <label class="form-field">
+        <span>地址</span>
+        <input name="base_url" value="{{ instance.base_url }}" required />
+      </label>
+    </div>
+    <div class="form-grid">
+      <label class="form-field">
+        <span>用户名</span>
+        <input name="username" value="{{ instance.username }}" required />
+      </label>
+      <label class="form-field">
+        <span>新密码</span>
+        <input type="password" name="password" placeholder="留空则保持不变" />
+      </label>
+    </div>
+    <div class="form-grid form-grid--three">
+      <label class="form-field">
+        <span>汇报间隔 (分钟)</span>
+        <input type="number" name="interval_minutes" min="1" value="{{ instance.interval_minutes }}" required />
+      </label>
+      <label class="form-field">
+        <span>请求超时 (秒)</span>
+        <input type="number" name="request_timeout_seconds" min="1" value="{{ instance.request_timeout_seconds }}" required />
+      </label>
+      <label class="form-field">
+        <span>重试次数</span>
+        <input type="number" name="retry_count" min="0" max="10" value="{{ instance.retry_count|default(3) }}" required />
+      </label>
+    </div>
+    <div class="form-field--checkbox-group">
+      <label class="checkbox-item">
+        <input type="checkbox" name="verify_tls" {% if instance.verify_tls %}checked{% endif %} />
+        <span>验证 TLS</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="enabled" {% if instance.enabled %}checked{% endif %} />
+        <span>启用实例</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="reannounce_enabled" {% if instance.reannounce_enabled %}checked{% endif %} />
+        <span>启用定时汇报</span>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">保存修改</button>
+      <span class="form-message" data-instance-message="{{ instance.id }}"></span>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h3>种子列表</h3>
+    <span class="instance-count">{{ torrents|length }}</span>
+  </div>
+
+  {% if torrents %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-name">名称</th>
+          <th class="col-size">大小</th>
+          <th class="col-progress">进度</th>
+          <th class="col-speed">下载</th>
+          <th class="col-speed">上传</th>
+          <th class="col-state">状态</th>
+          <th class="col-size">做种</th>
+          <th class="col-size">下载者</th>
+          <th class="col-size">已下载</th>
+          <th class="col-size">已上传</th>
+          <th class="col-ratio">分享率</th>
+          <th class="col-actions">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for torrent in torrents %}
+        <tr data-torrent-hash="{{ torrent.hash }}" data-animate="fade-in-up">
+          <td class="col-name">
+            <span class="torrent-name" title="{{ torrent.name }}">{{ torrent.name }}</span>
+            <span class="torrent-hash">{{ torrent.hash[:8] }}...</span>
+          </td>
+          <td class="col-size">{{ torrent.size_formatted }}</td>
+          <td class="col-progress">
+            <div class="progress-cell">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ torrent.progress_pct }}%"></div>
+              </div>
+              <span class="progress-text">{{ torrent.progress_pct }}%</span>
+            </div>
+          </td>
+          <td class="col-speed">{{ torrent.dlspeed_formatted }}</td>
+          <td class="col-speed">{{ torrent.upspeed_formatted }}</td>
+          <td class="col-state">
+            <span class="badge badge-{{ torrent.state|lower|replace(' ', '-') }}">{{ torrent.state }}</span>
+          </td>
+          <td class="col-size">{{ torrent.num_seeds }}({{ torrent.num_complete }})</td>
+          <td class="col-size">{{ torrent.num_leechs }}({{ torrent.num_incomplete }})</td>
+          <td class="col-size">{{ torrent.downloaded_formatted }}</td>
+          <td class="col-size">{{ torrent.uploaded_formatted }}</td>
+          <td class="col-ratio">{{ "%.2f"|format(torrent.ratio or 0) }}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-icon"
+              data-action="reannounce-one"
+              data-hash="{{ torrent.hash }}"
+              data-instance="{{ instance.id }}"
+              title="强制重新汇报">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button type="button" class="btn-icon"
+              data-action="recheck-one"
+              data-hash="{{ torrent.hash }}"
+              data-instance="{{ instance.id }}"
+              title="强制重新校验">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p>该实例暂无种子数据</p>
+  </div>
+  {% endif %}
+</section>
+
+<div id="toast-container"></div>
+{% endblock %}
