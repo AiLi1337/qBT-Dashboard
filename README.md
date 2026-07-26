@@ -32,9 +32,9 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 快速开始（本地开发）
 
-### 1. 环境准备
+### 环境准备
 
 ```bash
 # 安装依赖
@@ -46,7 +46,7 @@ cp .env.example .env
 
 编辑 `.env` 文件，填写必填配置（[见下方环境变量说明](#-环境变量)）。
 
-### 2. 启动服务
+### 启动服务
 
 <details>
 <summary><b>方式一：启动脚本（推荐）</b></summary>
@@ -78,13 +78,73 @@ uvicorn app.main:app --reload
 ```
 </details>
 
-### 3. Docker 部署
+### Docker 部署
 
 ```bash
 cp .env.example .env
 # 编辑 .env 填写真实配置
 
 docker compose up --build
+```
+
+---
+
+## 🌐 部署到服务器
+
+### 拉取代码
+
+```bash
+# HTTPS
+git clone https://github.com/AiLi1337/qBT-Dashboard.git
+cd qBT-Dashboard
+```
+
+```bash
+# SSH（服务器无法直连 GitHub 时使用）
+git clone git@github.com:AiLi1337/qBT-Dashboard.git
+cd qBT-Dashboard
+```
+
+### 配置环境
+
+```bash
+cp .env.example .env
+vim .env   # 填入真实密钥（必填项见下方环境变量表）
+```
+
+### 启动
+
+<details open>
+<summary><b>裸机运行（需 Python 3.10+）</b></summary>
+
+```bash
+pip install -r requirements.txt
+
+# 开发模式
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# 生产模式
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+</details>
+
+<details open>
+<summary><b>Docker（推荐）</b></summary>
+
+```bash
+docker compose up --build -d
+```
+</details>
+
+### 更新代码
+
+```bash
+git pull                                          # 拉取最新代码
+pip install -r requirements.txt --upgrade         # 更新依赖（如有变更）
+
+# 重启服务
+# 裸机：重启 uvicorn 进程
+# Docker：docker compose up --build -d
 ```
 
 ---
@@ -139,66 +199,6 @@ docker compose up --build
 - 🐧 **Linux**（Ubuntu、Debian、CentOS 等）
 - 🍎 **macOS**
 - 🐳 **Docker**（任意宿主）
-
----
-
-## 🌐 部署到服务器
-
-### 拉取代码
-
-```bash
-# HTTPS
-git clone https://github.com/AiLi1337/qBT-Dashboard.git
-cd qBT-Dashboard
-```
-
-```bash
-# SSH（服务器无法直连 GitHub 时使用）
-git clone git@github.com:AiLi1337/qBT-Dashboard.git
-cd qBT-Dashboard
-```
-
-### 配置环境
-
-```bash
-cp .env.example .env
-vim .env   # 填入真实密钥（必填项见上方环境变量表）
-```
-
-### 启动方式
-
-<details open>
-<summary><b>方式一：裸机运行（需 Python 3.10+）</b></summary>
-
-```bash
-pip install -r requirements.txt
-
-# 开发模式
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-# 生产模式
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-</details>
-
-<details open>
-<summary><b>方式二：Docker（推荐）</b></summary>
-
-```bash
-docker compose up --build -d
-```
-</details>
-
-### 更新代码
-
-```bash
-git pull                                          # 拉取最新代码
-pip install -r requirements.txt --upgrade         # 更新依赖（如有变更）
-
-# 重启服务
-# 裸机：重启 uvicorn 进程
-# Docker：docker compose up --build -d
-```
 
 ---
 
