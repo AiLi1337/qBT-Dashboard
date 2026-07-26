@@ -125,3 +125,54 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 - 兼容 qBittorrent 4.x/5.x WebUI API v2，测试至 4.3.9
 - 为兼容旧版，重新做种逻辑先获取全部种子 hash，再分批调用 reannounce
 - 若 qB WebUI 使用自签名证书，可在实例配置中关闭 `verify_tls`
+
+## 部署到服务器
+
+### 拉取代码
+
+```bash
+git clone https://github.com/AiLi1337/qBT-Dashboard.git
+cd qBT-Dashboard
+```
+
+> 如果服务器无法直连 GitHub，可用 SSH：
+> ```bash
+> git clone git@github.com:AiLi1337/qBT-Dashboard.git
+> cd qBT-Dashboard
+> ```
+
+### 配置环境
+
+```bash
+cp .env.example .env
+# 编辑 .env，填入真实密钥（必填项见上方环境变量表）
+```
+
+### 启动方式
+
+**方式 1 — 裸机运行（需 Python 3.10+）**
+
+```bash
+pip install -r requirements.txt
+# 开发模式
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 生产模式
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+**方式 2 — Docker（推荐）**
+
+```bash
+docker compose up --build -d
+```
+
+### 更新代码
+
+```bash
+git pull
+# 如有依赖变更
+pip install -r requirements.txt --upgrade
+# 重启服务
+# 裸机：重启 uvicorn 进程
+# Docker：docker compose up --build -d
+```
