@@ -9,18 +9,18 @@
     <title>{% block title %}qBittorrent 管理面板{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
     <script>
       (function () {
         var theme = localStorage.getItem("qb-theme");
-        if (theme !== "light") { document.documentElement.setAttribute("data-theme", "dark"); }
-        else { document.documentElement.setAttribute("data-theme", "light"); }
+        if (theme !== "dark") { document.documentElement.setAttribute("data-theme", "light"); }
+        else { document.documentElement.setAttribute("data-theme", "dark"); }
       })();
     </script>
-    <link rel="stylesheet" href="/static/styles.css?v=20260724-glass4" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260801-glassair" />
     <script>window.APP_CSRF_TOKEN = {{ (csrf_token or "")|tojson }};</script>
     {% block head %}{% endblock %}
-    <script defer src="/static/app.js?v=20260724-glass4"></script>
+    <script defer src="/static/app.js?v=20260801-glassair"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到主内容</a>

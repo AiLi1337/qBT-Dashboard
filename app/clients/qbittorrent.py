@@ -72,7 +72,10 @@ class QBClient:
         await self._dl_client.aclose()
 
     async def _login(self) -> None:
-        password = self.secret_cipher.decrypt(self.instance.encrypted_password)
+        try:
+            password = self.secret_cipher.decrypt(self.instance.encrypted_password)
+        except (ValueError, TypeError) as exc:
+            raise QBClientError("节点密码无法解密，请重新填写密码后保存") from exc
         try:
             response = await self.client.post(
                 "/api/v2/auth/login",
@@ -81,6 +84,8 @@ class QBClient:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             raise QBAuthError(f"qBittorrent WebUI login failed: {exc}") from exc
+        except httpx.RequestError as exc:
+            raise QBClientError(f"无法连接 qBittorrent WebUI: {exc}") from exc
 
         # qB 4.x:   200 OK,  body = "Ok." (success) / "Fails." (failure)
         # qB 5.x:   204 No Content, empty body (success), cookie handled by httpx jar
@@ -100,21 +105,24 @@ class QBClient:
         self._logged_in = True
 
     async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
-        if not self._logged_in:
-            await self._login()
-        response = await self.client.request(method, path, **kwargs)
-        if response.status_code in {401, 403}:
-            self._logged_in = False
-            try:
-                await self._login()
-            except QBAuthError:
-                raise
-            response = await self.client.request(method, path, **kwargs)
         try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError:
-            self._logged_in = False
-            raise
+            if not self._logged_in:
+                await self._login()
+            response = await self.client.request(method, path, **kwargs)
+            if response.status_code in {401, 403}:
+                self._logged_in = False
+                try:
+                    await self._login()
+                except QBAuthError:
+                    raise
+                response = await self.client.request(method, path, **kwargs)
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError:
+                self._logged_in = False
+                raise
+        except httpx.RequestError as exc:
+            raise QBClientError(f"无法连接 qBittorrent WebUI: {exc}") from exc
         return response
 
     def _assert_public_url(self, url: str, allow_private: bool = False) -> urllib.parse.ParseResult:
@@ -184,6 +192,14 @@ class QBClient:
             return QBConnectionProbe(
                 reachable=True,
                 authenticated=True,
+                app_version=None,
+                webapi_version=None,
+                message=str(exc),
+            )
+        except QBClientError as exc:
+            return QBConnectionProbe(
+                reachable=False,
+                authenticated=False,
                 app_version=None,
                 webapi_version=None,
                 message=str(exc),

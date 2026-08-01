@@ -9,6 +9,8 @@
     <p class="muted page-desc">{{ instance.base_url }}</p>
   </div>
   <div class="header-actions">
+    <a href="/instances/{{ instance.id }}/edit" class="link-button">编辑配置</a>
+    <a href="/instances/{{ instance.id }}/torrents/add" class="link-button">添加种子</a>
     <a href="/instances" class="link-button">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       返回实例列表
@@ -16,65 +18,6 @@
   </div>
 </section>
 
-<section class="panel panel-form" data-animate="fade-in">
-  <div class="panel-head">
-    <h3>编辑配置</h3>
-  </div>
-  <form class="stack update-instance-form" data-update-instance-form="{{ instance.id }}">
-    <div class="form-grid">
-      <label class="form-field">
-        <span>名称</span>
-        <input name="name" value="{{ instance.name }}" required />
-      </label>
-      <label class="form-field">
-        <span>地址</span>
-        <input name="base_url" value="{{ instance.base_url }}" required />
-      </label>
-    </div>
-    <div class="form-grid">
-      <label class="form-field">
-        <span>用户名</span>
-        <input name="username" value="{{ instance.username }}" required />
-      </label>
-      <label class="form-field">
-        <span>新密码</span>
-        <input type="password" name="password" placeholder="留空则保持不变" />
-      </label>
-    </div>
-    <div class="form-grid form-grid--three">
-      <label class="form-field">
-        <span>汇报间隔 (分钟)</span>
-        <input type="number" name="interval_minutes" min="1" value="{{ instance.interval_minutes }}" required />
-      </label>
-      <label class="form-field">
-        <span>请求超时 (秒)</span>
-        <input type="number" name="request_timeout_seconds" min="1" value="{{ instance.request_timeout_seconds }}" required />
-      </label>
-      <label class="form-field">
-        <span>重试次数</span>
-        <input type="number" name="retry_count" min="0" max="10" value="{{ instance.retry_count|default(3) }}" required />
-      </label>
-    </div>
-    <div class="form-field--checkbox-group">
-      <label class="checkbox-item">
-        <input type="checkbox" name="verify_tls" {% if instance.verify_tls %}checked{% endif %} />
-        <span>验证 TLS</span>
-      </label>
-      <label class="checkbox-item">
-        <input type="checkbox" name="enabled" {% if instance.enabled %}checked{% endif %} />
-        <span>启用实例</span>
-      </label>
-      <label class="checkbox-item">
-        <input type="checkbox" name="reannounce_enabled" {% if instance.reannounce_enabled %}checked{% endif %} />
-        <span>启用定时汇报</span>
-      </label>
-    </div>
-    <div class="form-actions">
-      <button type="submit" class="btn-primary">保存修改</button>
-      <span class="form-message" data-instance-message="{{ instance.id }}"></span>
-    </div>
-  </form>
-</section>
 
 <section class="panel">
   <div class="panel-head">
