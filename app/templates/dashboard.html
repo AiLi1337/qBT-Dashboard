@@ -57,8 +57,9 @@
             <td><code>{{ item.base_url|mask_url_host }}</code></td>
             <td>{{ item.interval_minutes }} 分</td>
             <td>
-              {% if item.enabled and (item.last_status or 'ok') == 'ok' %}<span class="badge badge-ok" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>正常</span>
-              {% elif item.enabled %}<span class="badge badge-error" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>异常</span>
+              {% if item.enabled and item.last_status == 'ok' %}<span class="badge badge-ok" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>正常</span>
+              {% elif item.enabled and item.last_status == 'error' %}<span class="badge badge-error" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>异常</span>
+              {% elif item.enabled %}<span class="badge badge-idle" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>未检测</span>
               {% else %}<span class="badge badge-idle" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>停用</span>{% endif %}
             </td>
             <td><span class="error-msg-cell" title="{{ item.last_error_message or '-' }}">{{ item.last_error_message or '-' }}</span></td>

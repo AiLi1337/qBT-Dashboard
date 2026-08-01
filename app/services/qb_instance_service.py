@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Optional, Any, Dict, List
+import httpx
 from dataclasses import dataclass
 
 from app.clients import QBAuthError, QBClient, QBClientError, QBCompatibilityError
@@ -137,6 +138,8 @@ class QBInstanceService:
         try:
             torrents = await client.get_torrents()
             return torrents
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -179,6 +182,8 @@ class QBInstanceService:
         try:
             properties = await client.get_torrent_properties(torrent_hash)
             return properties
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -238,6 +243,8 @@ class QBInstanceService:
         try:
             count = await client.recheck_all()
             return count
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -246,6 +253,8 @@ class QBInstanceService:
         client = QBClient(instance, self.secret_cipher)
         try:
             await client.reannounce_one(torrent_hash)
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -254,6 +263,8 @@ class QBInstanceService:
         client = QBClient(instance, self.secret_cipher)
         try:
             await client.recheck_one(torrent_hash)
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -262,6 +273,8 @@ class QBInstanceService:
         client = QBClient(instance, self.secret_cipher)
         try:
             return await client.reannounce_batch(torrent_hashes)
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -274,6 +287,8 @@ class QBInstanceService:
         try:
             info = await client.get_transfer_info()
             return info
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
 
@@ -286,6 +301,8 @@ class QBInstanceService:
         try:
             result = await client.add_torrent(urls, savepath, upload_limit_b, download_limit_b)
             return result
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()
     async def recheck_batch(self, instance_id: int, torrent_hashes: list[str]) -> int:
@@ -293,5 +310,7 @@ class QBInstanceService:
         client = QBClient(instance, self.secret_cipher)
         try:
             return await client.recheck_batch(torrent_hashes)
+        except (QBClientError, httpx.HTTPStatusError) as exc:
+            raise QBInstanceServiceError(str(exc)) from exc
         finally:
             await client.close()

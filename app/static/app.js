@@ -35,6 +35,7 @@ async function apiRequest(url, options = {}) {
     ...options,
     headers,
   });
+  if (response.status === 204 || response.status === 205) return null;
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
   if (!response.ok) {
@@ -56,7 +57,17 @@ function showLoading(button) {
   if (!button) return;
   button.disabled = true;
   button.dataset.originalHtml = button.innerHTML;
-  button.innerHTML = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg> ' + (button.dataset.loadingText || '处理中...');
+  var isIcon = button.classList.contains('btn-icon');
+  var label = button.dataset.loadingText || '处理中...';
+  var spinner = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>';
+  button.classList.add('is-loading');
+  if (isIcon) {
+    button.dataset.originalAriaLabel = button.getAttribute('aria-label') || '';
+    button.setAttribute('aria-label', label);
+    button.innerHTML = spinner;
+  } else {
+    button.innerHTML = spinner + ' ' + label;
+  }
 }
 function hideLoading(button) {
   if (!button) return;
@@ -64,6 +75,11 @@ function hideLoading(button) {
   if (button.dataset.originalHtml) {
     button.innerHTML = button.dataset.originalHtml;
     delete button.dataset.originalHtml;
+  }
+  button.classList.remove('is-loading');
+  if (button.dataset.originalAriaLabel !== undefined) {
+    button.setAttribute('aria-label', button.dataset.originalAriaLabel);
+    delete button.dataset.originalAriaLabel;
   }
 }
 
@@ -277,8 +293,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
       try {
         var data = await apiRequest('/api/v1/instances/' + id + '/test-connection', { method: 'POST' });
-        setMessage(target, data.message + (data.app_version ? ' (版本: ' + data.app_version + ')' : ''), 'success');
-        showToast('连接成功', 'success');
+        var ok = data.reachable && data.authenticated && data.app_version;
+        var card = button.closest('.instance-card') || button.closest('details');
+        var badge = card ? card.querySelector('.badge') : null;
+        if (ok) {
+          setMessage(target, data.message + (data.app_version ? ' (版本: ' + data.app_version + ')' : ''), 'success');
+          showToast('连接成功', 'success');
+          if (badge) { badge.className = 'badge badge-ok'; badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>正常'; }
+        } else {
+          var message = data.message || '连接失败';
+          setMessage(target, message, 'error');
+          showToast('连接失败: ' + message, 'error');
+          if (badge) { badge.className = 'badge badge-error'; badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>异常'; }
+        }
       } catch (error) {
         setMessage(target, error.message, 'error');
         showToast('连接失败: ' + error.message, 'error');

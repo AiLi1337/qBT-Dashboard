@@ -3,7 +3,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from app.clients.qbittorrent import QBClient
+from app.clients.qbittorrent import QBClient, QBClientError
 from app.domain import QBInstance
 from app.security import SecretCipher
 
@@ -113,3 +113,15 @@ async def test_probe_reports_network_failures(qb_instance):
 
     assert probe.reachable is False
     assert probe.authenticated is False
+
+
+@pytest.mark.asyncio
+async def test_login_reports_undecryptable_password(qb_instance):
+    instance, cipher = qb_instance
+    instance.encrypted_password = "not-a-valid-fernet-token"
+    client = QBClient(instance, cipher)
+    try:
+        with pytest.raises(QBClientError, match="无法解密"):
+            await client._login()
+    finally:
+        await client.close()

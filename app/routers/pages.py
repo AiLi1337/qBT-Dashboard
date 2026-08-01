@@ -162,3 +162,37 @@ async def instance_detail(request: Request, instance_id: int):
             torrent_error=torrent_error if torrent_error else None,
         ),
     )
+
+
+@router.get("/instances/{instance_id}/edit")
+def instance_edit_page(request: Request, instance_id: int):
+    """Standalone instance edit page."""
+    session_context = _page_session_or_redirect(request)
+    if session_context is None:
+        return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
+    container = get_container(request)
+    try:
+        instance = container.qb_instance_service.get_instance(instance_id)
+    except QBInstanceServiceError:
+        return RedirectResponse("/instances", status_code=status.HTTP_303_SEE_OTHER)
+    return container.templates.TemplateResponse(
+        "instance_edit.html",
+        template_context(request, session_context, instance=instance),
+    )
+
+
+@router.get("/instances/{instance_id}/torrents/add")
+def instance_add_torrent_page(request: Request, instance_id: int):
+    """Standalone add torrent page."""
+    session_context = _page_session_or_redirect(request)
+    if session_context is None:
+        return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
+    container = get_container(request)
+    try:
+        instance = container.qb_instance_service.get_instance(instance_id)
+    except QBInstanceServiceError:
+        return RedirectResponse("/instances", status_code=status.HTTP_303_SEE_OTHER)
+    return container.templates.TemplateResponse(
+        "instance_add_torrent.html",
+        template_context(request, session_context, instance=instance),
+    )

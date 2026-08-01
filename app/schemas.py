@@ -12,7 +12,7 @@ class QBInstanceCreate(BaseModel):
     base_url: str
     username: str = Field(min_length=1, max_length=120)
     password: str = Field(min_length=1)
-    verify_tls: bool = True
+    verify_tls: bool = False
     enabled: bool = True
     reannounce_enabled: bool = True
     interval_minutes: int = 60
