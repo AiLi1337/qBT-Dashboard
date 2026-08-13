@@ -1,6 +1,7 @@
 services:
   qb-panel:
     build: .
+    restart: unless-stopped
     ports:
       - "8000:8000"
     env_file:
